@@ -18,7 +18,9 @@ npm install
 docker compose usp
 ```
 
-4. Visit [http://localhost:4173/](http://localhost:4173/)
+4. Visit [http://localhost:3000/](http://localhost:3000/)
+
+The default route lists the tables of the database defined by `DATABASE_URL`.
 
 ## src/db.js
 
@@ -28,9 +30,9 @@ The database connection is created using the Neon Serverless driver
 import 'dotenv/config';
 
 import { neon, neonConfig } from '@neondatabase/serverless';
-neonConfig.fetchEndpoint = 'http://db:5432/sql';
+neonConfig.fetchEndpoint = 'http://db:8080/sql';
 
-export const sql = neon('postgres://neon:npg@db:5432/neondb');
+export const sql = neon('postgres://neon:npg@db:8080/neondb');
 ```
 
 ## docker-compose.yml
@@ -42,17 +44,19 @@ services:
   app:
     build: .
     ports:
-      - '4173:4173'
+      - '${PORT}:${PORT}'
     volumes:
       - .:/app
       - /app/node_modules
+    environment:
+      - PORT=${PORT}
     depends_on:
       - db
 
   db:
     image: neondatabase/neon_local:latest
     ports:
-      - '5432:5432'
+      - '8080:8080'
     environment:
       NEON_API_KEY: ${NEON_API_KEY}
       NEON_PROJECT_ID: ${NEON_PROJECT_ID}
@@ -65,8 +69,5 @@ services:
 DATABASE_URL=postgres://neon:npg@db:5432/neondb
 NEON_API_KEY=<api-key>
 NEON_PROJECT_ID=<project-id>
+PORT=3000
 ```
-
-### Notes
-
-There is an additional route for `/book/:bookId`, this is specific to the database. Routes can be added/amended in `server-dev.js` to suit the needs of the database. Simliar for `src/function.js` / `getBookData`, change as required.

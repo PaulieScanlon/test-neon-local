@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'fs';
 import express from 'express';
 import { createServer } from 'vite';
@@ -36,22 +37,13 @@ async function renderPage(req, res, dataFetcher) {
   }
 }
 
-app.use('/book/:bookId', async (req, res) => {
-  await renderPage(req, res, async (req) => {
-    const { getBookData } = await vite.ssrLoadModule('/src/function.js');
-    const bookId = req.params.bookId;
-    return await getBookData(bookId);
-  });
-});
-
 app.use('*', async (req, res) => {
   await renderPage(req, res, async () => {
-    const { getServerData } = await vite.ssrLoadModule('/src/function.js');
-    return await getServerData();
+    const { getDefaultData } = await vite.ssrLoadModule('/src/function.js');
+    return await getDefaultData();
   });
 });
 
-const PORT = 4173;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(process.env.PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${process.env.PORT}`);
 });

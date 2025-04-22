@@ -1,16 +1,10 @@
-import 'dotenv/config';
-
 import { sql } from './db.js';
 
-export async function getBookData(bookId) {
+export const getDefaultData = async () => {
   try {
-    const result = await sql`SELECT * FROM books WHERE id = ${bookId}`;
+    const result = await sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';`;
     return result;
   } catch (error) {
     return error;
   }
-}
-
-export const getServerData = async () => {
-  return null;
 };
