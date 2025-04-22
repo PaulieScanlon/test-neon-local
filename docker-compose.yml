@@ -19,3 +19,4 @@ services:
       NEON_API_KEY: ${NEON_API_KEY}
       NEON_PROJECT_ID: ${NEON_PROJECT_ID}
       DRIVER: serverless
+      # DRIVER: postgres
