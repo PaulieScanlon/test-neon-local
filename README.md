@@ -15,7 +15,7 @@ npm install
 3. Start container
 
 ```shell
-docker compose usp
+docker compose up
 ```
 
 4. Visit [http://localhost:3000/](http://localhost:3000/)
@@ -24,11 +24,19 @@ The default route displays the current Postgres version of the database defined 
 
 To change this function edit: `src/function.js`
 
+## ☝️ Production build
+
+Switching between the local and cloud environments within a client file is controlled by the `NODE_ENV` environment variable. Each client file includes logic to connect to either the local or cloud instance, based on the current value of `NODE_ENV`. See below for `db.js` and `pg.js`.
+
+- Change the `NODE_ENV` variable to `production`
+- run `npm run build`
+- run `docker compose up`
+
 ## Docker compose
 
 You can also add the Neon Local container directly to your compose app like this
 
-## Serverless Driver
+### Serverless Driver
 
 Setup instructions for when using Neon's [Serverless driver](https://neon.tech/docs/serverless/serverless-driver).
 
@@ -61,10 +69,18 @@ services:
 ```javascript
 // src/db.js
 
-import { neon, neonConfig } from '@neondatabase/serverless';
-neonConfig.fetchEndpoint = 'http://db:5432/sql'; // The port here is important
+import 'dotenv/config';
 
-export const sql = neon('postgres://neon:npg@db:5432/neondb);
+import { neon, neonConfig } from '@neondatabase/serverless';
+
+if (process.env.NODE_ENV !== 'production') {
+  neonConfig.fetchEndpoint = 'http://db:5432/sql';
+}
+
+const connectionString =
+  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL : 'postgres://neon:npg@db:5432/neondb';
+
+export const sql = neon(connectionString);
 ```
 
 ```javascript
@@ -76,7 +92,10 @@ export const getDefaultData = async () => {
   try {
     const result = await sql`SELECT version()`;
 
-    return result;
+    return {
+      env: process.env.NODE_ENV,
+      data: result,
+    };
   } catch (error) {
     console.error('Database error:', error);
     throw error;
@@ -87,6 +106,8 @@ export const getDefaultData = async () => {
 ```shell
 # .env
 
+DATABASE_URL=<database-url>
+NODE_ENV=production || development
 NEON_API_KEY=<api-key>
 NEON_PROJECT_ID=<project-id>
 PORT=3000
@@ -125,13 +146,15 @@ services:
 ```javascript
 // src/pg.js
 
+import 'dotenv/config';
+
 import pg from 'pg';
 const { Pool } = pg;
-const connectionString = 'postgres://neon:npg@db:5432/neondb';
 
-export const pool = new Pool({
-  connectionString,
-});
+const connectionString =
+  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL : 'postgres://neon:npg@db:5432/neondb';
+
+export const pool = new Pool({ connectionString });
 ```
 
 ```javascript
@@ -143,7 +166,10 @@ export const getDefaultData = async () => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT version()');
-    return result;
+    return {
+      env: process.env.NODE_ENV,
+      data: result.rows[0],
+    };
   } catch (error) {
     console.error('Database error:', error);
     throw error;
@@ -156,6 +182,8 @@ export const getDefaultData = async () => {
 ```shell
 # .env
 
+DATABASE_URL=<database-url>
+NODE_ENV=production || development
 NEON_API_KEY=<api-key>
 NEON_PROJECT_ID=<project-id>
 PORT=3000
