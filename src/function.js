@@ -1,27 +1,27 @@
-import { sql } from './db.js';
-
-export const getDefaultData = async () => {
-  try {
-    const result = await sql`SELECT version()`;
-
-    return result;
-  } catch (error) {
-    console.error('Database error:', error);
-    throw error;
-  }
-};
-
-// import { pool } from './pg.js';
+// import { sql } from './db.js';
 
 // export const getDefaultData = async () => {
-//   const client = await pool.connect();
 //   try {
-//     const result = await client.query('SELECT version()');
+//     const result = await sql`SELECT version()`;
+
 //     return result;
 //   } catch (error) {
 //     console.error('Database error:', error);
 //     throw error;
-//   } finally {
-//     client.release();
 //   }
 // };
+
+import { pool } from './pg.js';
+
+export const getDefaultData = async () => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT version()');
+    return result;
+  } catch (error) {
+    console.error('Database error:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};

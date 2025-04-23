@@ -34,6 +34,7 @@ Setup instructions for when using Neon's [Serverless driver](https://neon.tech/d
 
 ```yml
 # docker-compose.yml
+
 services:
   app:
     build: .
@@ -50,7 +51,7 @@ services:
   db:
     image: neondatabase/neon_local:latest
     ports:
-      - '8080:8080' # The port here is important
+      - '5432:5432'
     environment:
       NEON_API_KEY: ${NEON_API_KEY}
       NEON_PROJECT_ID: ${NEON_PROJECT_ID}
@@ -60,12 +61,10 @@ services:
 ```javascript
 // src/db.js
 
-import 'dotenv/config';
-
 import { neon, neonConfig } from '@neondatabase/serverless';
-neonConfig.fetchEndpoint = 'http://db:8080/sql'; // The port here is important
+neonConfig.fetchEndpoint = 'http://db:5432/sql'; // The port here is important
 
-export const sql = neon(process.env.SERVERLESS_DATABASE_URL);
+export const sql = neon('postgres://neon:npg@db:5432/neondb);
 ```
 
 ```javascript
@@ -88,10 +87,9 @@ export const getDefaultData = async () => {
 ```shell
 # .env
 
-SERVERLESS_DATABASE_URL=postgres://neon:npg@db:5432/neondb # The port here doesn't seem to matter
 NEON_API_KEY=<api-key>
 NEON_PROJECT_ID=<project-id>
-PORT=
+PORT=3000
 ```
 
 ### Postgres
@@ -117,7 +115,7 @@ services:
   db:
     image: neondatabase/neon_local:latest
     ports:
-      - '5432:5432' # The port here is important
+      - '5432:5432'
     environment:
       NEON_API_KEY: ${NEON_API_KEY}
       NEON_PROJECT_ID: ${NEON_PROJECT_ID}
@@ -127,11 +125,9 @@ services:
 ```javascript
 // src/pg.js
 
-import 'dotenv/config';
-
 import pg from 'pg';
 const { Pool } = pg;
-const connectionString = process.env.POSTGRES_DATABASE_URL;
+const connectionString = 'postgres://neon:npg@db:5432/neondb';
 
 export const pool = new Pool({
   connectionString,
@@ -160,7 +156,6 @@ export const getDefaultData = async () => {
 ```shell
 # .env
 
-POSTGRES_DATABASE_URL=postgres://neon:npg@db:5432/neondb # The port here doesn't seem to matter
 NEON_API_KEY=<api-key>
 NEON_PROJECT_ID=<project-id>
 PORT=3000
