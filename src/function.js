@@ -4,7 +4,10 @@
 //   try {
 //     const result = await sql`SELECT version()`;
 
-//     return result;
+//     return {
+//       env: process.env.NODE_ENV,
+//       data: result,
+//     };
 //   } catch (error) {
 //     console.error('Database error:', error);
 //     throw error;
@@ -17,7 +20,10 @@ export const getDefaultData = async () => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT version()');
-    return result;
+    return {
+      env: process.env.NODE_ENV,
+      data: result.rows[0],
+    };
   } catch (error) {
     console.error('Database error:', error);
     throw error;

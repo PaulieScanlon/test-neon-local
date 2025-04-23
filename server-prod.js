@@ -1,25 +1,18 @@
 import 'dotenv/config';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
-import { createServer } from 'vite';
 
 const app = express();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const vite = await createServer({
-  server: {
-    middlewareMode: true,
-  },
-  appType: 'custom',
-});
-
-app.use(vite.middlewares);
+app.use(express.static(path.resolve(__dirname, 'dist/client'), { index: false }));
 
 async function renderPage(req, res, dataFetcher) {
-  const url = req.originalUrl;
-
   try {
-    const template = await vite.transformIndexHtml(url, fs.readFileSync('index.html', 'utf-8'));
-    const { render } = await vite.ssrLoadModule('/src/entry-server.jsx');
+    const template = fs.readFileSync('./dist/client/index.html', 'utf-8');
+    const { render } = await import('./dist/server/entry-server.js');
 
     const data = await dataFetcher(req);
 
@@ -37,7 +30,7 @@ async function renderPage(req, res, dataFetcher) {
 
 app.use('*', async (req, res) => {
   await renderPage(req, res, async () => {
-    const { getDefaultData } = await vite.ssrLoadModule('/src/function.js');
+    const { getDefaultData } = await import('./dist/function/function.js');
     return await getDefaultData();
   });
 });

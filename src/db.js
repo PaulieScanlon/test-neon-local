@@ -1,4 +1,12 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
-neonConfig.fetchEndpoint = 'http://db:5432/sql';
+import 'dotenv/config';
 
-export const sql = neon('postgres://neon:npg@db:5432/neondb');
+import { neon, neonConfig } from '@neondatabase/serverless';
+
+if (process.env.NODE_ENV !== 'production') {
+  neonConfig.fetchEndpoint = 'http://db:5432/sql';
+}
+
+const connectionString =
+  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL : 'postgres://neon:npg@db:5432/neondb';
+
+export const sql = neon(connectionString);
