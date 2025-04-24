@@ -145,14 +145,15 @@ services:
 
 ```javascript
 // src/pg.js
-
 import 'dotenv/config';
 
 import pg from 'pg';
 const { Pool } = pg;
 
 const connectionString =
-  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL : 'postgres://neon:npg@db:5432/neondb';
+  process.env.NODE_ENV === 'production'
+    ? process.env.DATABASE_URL
+    : 'postgres://neon:npg@db:5432/neondb?sslmode=no-verify';
 
 export const pool = new Pool({ connectionString });
 ```
@@ -194,3 +195,23 @@ PORT=3000
 You can run the Neon Local container with the following docker run command
 
 [TODO]
+
+```shell
+docker run \
+  --name db \
+  -p 5432:5432 \
+  -e NEON_API_KEY= <neon_api_key> \
+  -e NEON_PROJECT_ID=<neon_project_id> \
+  -e DRIVER=serverless \
+  neondatabase/neon_local:latest
+```
+
+```shell
+docker run \
+  --name db \
+  -p 5432:5432 \
+  -e NEON_API_KEY= <neon_api_key> \
+  -e NEON_PROJECT_ID=<neon_project_id> \
+  -e DRIVER=postgres \
+  neondatabase/neon_local:latest
+```
