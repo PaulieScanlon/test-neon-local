@@ -30,7 +30,7 @@ async function renderPage(req, res, dataFetcher) {
 
 app.use('*', async (req, res) => {
   await renderPage(req, res, async () => {
-    const { getDefaultData } = await import('./dist/function/function.js');
+    const { getDefaultData } = await import('./dist/functions/function.js');
     return await getDefaultData();
   });
 });
